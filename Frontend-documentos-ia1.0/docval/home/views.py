@@ -5,6 +5,9 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from .models import PerfilUsuario, Documento
 
+import requests
+from django.conf import settings
+
 # Página principal
 def home_view(request):
     return render(request, 'home.html')
@@ -79,7 +82,16 @@ def cargar_documentos(request):
 
         if archivo:
             Documento.objects.create(usuario=request.user, tipo_documento=tipo, archivo=archivo)
-            messages.success(request, "Documento subido correctamente")
+            response = requests.post(
+                f"{settings.BACKEND_URL}/ocr/upload/",
+                files={"file": archivo},
+            )
+            if response.status_code == 200:
+                resultado = response.json()
+                messages.success(request, f"Documento procesado: {resultado}")
+            else:
+                messages.error(request, "Error al procesar el documento en el backend")
+
             return redirect('mis_documentos')
 
     # Siempre renderiza la misma plantilla con criterios incluidos
