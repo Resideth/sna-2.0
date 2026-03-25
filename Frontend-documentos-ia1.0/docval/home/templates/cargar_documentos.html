@@ -1,0 +1,122 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cargar Documentos</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f4f6f9, #e8f5e9);
+            margin: 0;
+            display: flex;
+        }
+        .sidebar {
+            width: 240px;
+            background: linear-gradient(180deg, #00c853, #1b5e20);
+            color: #fff;
+            height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: fixed;
+            left: 0;
+            top: 0;
+            box-shadow: 4px 0 12px rgba(0,0,0,0.15);
+        }
+        .sidebar .nav-links { display: flex; flex-direction: column; gap: 15px; }
+        .sidebar .nav-links a {
+            color: #fff; text-decoration: none; font-weight: 500;
+            display: flex; align-items: center; gap: 8px;
+            padding: 12px; border-radius: 8px; transition: all 0.3s ease;
+        }
+        .sidebar .nav-links a:hover { background: rgba(255,255,255,0.15); }
+        .sidebar .nav-links a.active { background: rgba(255,255,255,0.25); font-weight: 600; }
+        .dashboard-container { margin-left: 240px; padding: 30px; width: 100%; }
+        .card { border-radius: 12px; box-shadow: 0 6px 14px rgba(0,0,0,0.1); margin-bottom: 25px; }
+        .btn-upload { background: #00c853; color: #fff; font-weight: 600; }
+        .btn-upload:hover { background: #1b5e20; color: #fff; }
+        .user-info { border-top: 1px solid rgba(255,255,255,0.3); padding-top: 15px; }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <div class="nav-links">
+        <a href="{% url 'cargar_documentos' %}" class="active"><i class="bi bi-upload"></i> Cargar Documentos</a>
+        <a href="{% url 'mis_documentos' %}"><i class="bi bi-folder"></i> Mis Documentos</a>
+    </div>
+    <div class="user-info">
+        <div class="d-flex align-items-center mb-2">
+            <div class="bg-light text-dark rounded-circle d-flex align-items-center justify-content-center" style="width:40px; height:40px; font-weight:600;">
+                {{ request.user.first_name|slice:":1" }}
+            </div>
+            <div class="ms-2">
+                <h6 class="mb-0">{{ request.user.first_name }}</h6>
+                <small>Aprendiz</small>
+            </div>
+        </div>
+        <a href="{% url 'logout' %}" class="btn btn-light btn-sm mt-3">
+            <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+        </a>
+    </div>
+</div>
+
+<!-- Contenido principal -->
+<div class="dashboard-container">
+    <!-- Formulario -->
+    <div class="card p-4">
+        <h3><i class="bi bi-upload"></i> Cargar Documentos</h3>
+        <p>Sube tu documento para validación</p>
+
+        <form method="POST" enctype="multipart/form-data" action="{% url 'cargar_documentos' %}">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">Tipo de Documento *</label>
+                <select class="form-select" name="tipo_documento" required>
+                    <option value="cedula" selected>Cédula</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Archivo</label>
+                <input type="file" class="form-control" name="archivo" required>
+                <small class="text-muted">Formatos permitidos: JPG, PNG, PDF | Tamaño máximo: 5MB</small>
+            </div>
+            <button type="submit" class="btn btn-upload w-100">
+                <i class="bi bi-upload"></i> Subir Documento
+            </button>
+        </form>
+    </div>
+
+    <!-- Información del Aprendiz -->
+    <div class="card p-4">
+        <h4>Información del Aprendiz (extraída del PDF)</h4>
+        {% if aprendiz_info %}
+            <p><strong>Nombre:</strong> {{ aprendiz_info.nombre }}</p>
+            <p><strong>Cédula:</strong> {{ aprendiz_info.cedula }}</p>
+            <p><strong>Fecha de Nacimiento:</strong> {{ aprendiz_info.fecha_nacimiento }}</p>
+            <p><strong>Programa:</strong> {{ aprendiz_info.programa }}</p>
+        {% else %}
+            <p class="text-muted">Sube tu cédula en PDF para ver la información aquí.</p>
+        {% endif %}
+    </div>
+
+    <!-- Criterios -->
+    <div class="card p-4">
+        <h4>Criterios de Validación Automática</h4>
+        <ul>
+            <li><strong>RF-004:</strong> Nitidez — Sin borrosidad ni desenfoque</li>
+            <li><strong>RF-005:</strong> Iluminación — Luz adecuada, sin sombras</li>
+            <li><strong>RF-006:</strong> Orientación — Sin rotación ni inclinación</li>
+            <li><strong>RF-007:</strong> Integridad — Documento completo y visible</li>
+        </ul>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
