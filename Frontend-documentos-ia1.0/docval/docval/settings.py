@@ -25,7 +25,8 @@ SECRET_KEY = 'django-insecure-pj)i)sori*#ajic3lh2yr%n%*%x7c6u=rs*oito+gup9h*vazt
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['sna-2-0-3.onrender.com', '.onrender.com']
+
 
 
 # Application definition
@@ -129,5 +130,3 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 import os
 BACKEND_URL = os.getenv("BACKEND_URL", "https://documentacion-sena-ia-01.onrender.com")
-
-
