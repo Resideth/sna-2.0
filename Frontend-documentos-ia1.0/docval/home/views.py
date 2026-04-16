@@ -76,26 +76,40 @@ def aprendiz_dashboard(request):
 # Documentos (única vista)
 @login_required
 def cargar_documentos(request):
+    aprendiz_info = None
     if request.method == "POST":
         tipo = request.POST.get("tipo_documento")
         archivo = request.FILES.get("archivo")
 
         if archivo:
             Documento.objects.create(usuario=request.user, tipo_documento=tipo, archivo=archivo)
-            response = requests.post(
-                f"{settings.BACKEND_URL}/ocr/upload/",
-                files={"file": archivo},
-            )
-            if response.status_code == 200:
-                resultado = response.json()
-                messages.success(request, f"Documento procesado: {resultado}")
-            else:
-                messages.error(request, "Error al procesar el documento en el backend")
+            try: 
+                response = requests.post(
+                    f"{settings.BACKEND_URL}/ocr/upload/",
+                    files={"file": archivo},
+                )
 
-            return redirect('mis_documentos')
+                if response.status_code == 200:
+                    resultado = response.json()
+                    print(resultado)         
+                    aprendiz_info = resultado
+                    messages.success(request, "Documento procesado correctamente")
+                else:
+                    messages.error(request, "Error al procesar el documento en el backend")
+
+            except Exception as e:
+                messages.error(request, f"Error al procesar el documento en el backend: {e}")
+
+    if not aprendiz_info:
+        aprendiz_info = {
+            "nombre": "Juan Pérez",
+            "cedula": "123456789",
+            "fecha_nacimiento": "1990-01-01",
+            "programa": "Análisis de Datos"
+        } 
 
     # Siempre renderiza la misma plantilla con criterios incluidos
-    return render(request, 'cargar_documentos.html')
+    return render(request, 'cargar_documentos.html', {'resultado': aprendiz_info})
 
 @login_required
 def mis_documentos(request):
