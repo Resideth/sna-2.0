@@ -48,11 +48,14 @@ def login_view(request):
         email = request.POST.get("email")
         password = request.POST.get("password")
 
-        user = authenticate(request, username=email, password=password)
+        response = requests.post(
+            f"{settings.BACKEND_URL}/login",
+            json={"email": email, "password": password}
+        )
 
-        if user is not None:
-            login(request, user)
-            # 🔹 Aquí cambiamos la redirección para que vaya a cargar_documentos
+        if response.status_code == 200:
+            data = response.json()
+            request.session["token"] = data.get("token")
             return redirect("cargar_documentos")
         else:
             messages.error(request, "Correo o contraseña incorrectos.")
