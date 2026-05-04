@@ -12,3 +12,5 @@ requests==2.32.3
 pillow==11.3.0
 numpy==2.4.4
 opencv-python==4.9.0.80
+dj-database-url==2.1.0
+
