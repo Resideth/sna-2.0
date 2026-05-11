@@ -67,15 +67,8 @@ WSGI_APPLICATION = 'docval.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'mssql-django',
-        'NAME': os.getenv('DB_NAME', 'documentos_sena'),
-        'USER': os.getenv('DB_USER', 'tu_usuario'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'tu_password'),
-        'HOST': os.getenv('DB_HOST', 'tu_servidor'),
-        'PORT': os.getenv('DB_PORT', '1433'),
-        'OPTIONS': {
-            'driver': 'ODBC Driver 17 for SQL Server',
-        },
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
