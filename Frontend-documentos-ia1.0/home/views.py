@@ -24,21 +24,18 @@ def register_view(request):
             messages.error(request, "Las contraseñas no coinciden")
             return redirect('register')
 
-        if User.objects.filter(username=email).exists():
-            messages.error(request, "El correo ya está registrado")
-        else:
-            user = User.objects.create_user(
-                username=email,
-                email=email,
-                password=password,
-                first_name=nombre
-            )
-            user.save()
+        # 🔹 Enviar datos al backend FastAPI
+        response = requests.post(
+            f"{settings.BACKEND_URL}/register",
+            json={"nombre": nombre, "email": email, "password": password}
+        )
 
-            PerfilUsuario.objects.create(user=user)
-
+        if response.status_code == 200:
             messages.success(request, "Usuario registrado correctamente")
             return redirect('login')
+        else:
+            messages.error(request, "Error al registrar usuario en el backend")
+            return redirect('register')
 
     return render(request, 'login.html')
 
