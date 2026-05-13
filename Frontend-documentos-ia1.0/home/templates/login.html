@@ -74,7 +74,7 @@
                 <h3>Crear Cuenta</h3>
                 <form method="post" action="{% url 'register' %}">
                     {% csrf_token %}
-                    <input type="text" name="username" class="form-control" placeholder="Nombre de usuario" required>
+                    <input type="text" name="nombre" class="form-control" placeholder="Nombre completo" required>
                     <input type="email" name="email" class="form-control" placeholder="Correo Electrónico" required>
                     <input type="password" name="password" class="form-control" placeholder="Contraseña" required>
                     <input type="password" name="password2" class="form-control" placeholder="Confirmar Contraseña" required>
