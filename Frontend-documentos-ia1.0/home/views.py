@@ -30,11 +30,19 @@ def register_view(request):
             json={"nombre": nombre, "email": email, "password": password}
         )
 
+        print("Respuesta del backend:", response.status_code, response.text)
+
         if response.status_code == 200:
             messages.success(request, "Usuario registrado correctamente")
             return redirect('login')
         else:
-            messages.error(request, "Error al registrar usuario en el backend")
+            try: 
+                error_data = response.json()
+                error_msg = error_data.get("detail", response.text)
+            except Exception:
+                error_msg = response.text
+            
+            messages.error(request, "Error al registrar")
             return redirect('register')
 
     return render(request, 'login.html')
