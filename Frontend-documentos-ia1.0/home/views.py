@@ -53,6 +53,7 @@ def login_view(request):
         email = request.POST.get("email")
         password = request.POST.get("password")
 
+        # 🔹 Autenticación contra FastAPI
         response = requests.post(
             f"{settings.BACKEND_URL}/login",
             json={"email": email, "password": password}
@@ -61,6 +62,12 @@ def login_view(request):
         if response.status_code == 200:
             data = response.json()
             request.session["token"] = data.get("token")
+
+            # 🔹 Autenticación también en Django
+            user = authenticate(request, username=email, password=password)
+            if user is not None:
+                login(request, user)  # marca al usuario como autenticado en Django
+
             return redirect("cargar_documentos")
         else:
             messages.error(request, "Correo o contraseña incorrectos.")
