@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from .models import PerfilUsuario, Documento
+from django.contrib.auth import authenticate, login
 
 import requests
 from django.conf import settings
@@ -48,6 +49,7 @@ def register_view(request):
     return render(request, 'login.html')
 
 # Login de usuarios
+
 def login_view(request):
     if request.method == "POST":
         email = request.POST.get("email")
@@ -65,13 +67,19 @@ def login_view(request):
 
             # 🔹 Autenticación también en Django
             user = authenticate(request, username=email, password=password)
-            if user is not None:
-                login(request, user)  # marca al usuario como autenticado en Django
+            if user is None:
+                # Si no existe, lo creamos para que Django lo reconozca
+                user = User.objects.filter(username=email).first()
+                if user is None:
+                    user = User.objects.create_user(username=email, email=email, password=password)
+
+            login(request, user)  # ahora Django sabe que está autenticado
 
             return redirect("cargar_documentos")
         else:
             messages.error(request, "Correo o contraseña incorrectos.")
     return render(request, "login.html")
+
 
 # Logout
 def logout_view(request):
