@@ -91,5 +91,6 @@ BACKEND_URL = os.getenv("BACKEND_URL", "https://documentacion-sena-ia-01.onrende
 
 # ✅ Configuración de autenticación personalizada
 LOGIN_URL = '/login/'                # Redirección cuando no está autenticado
-LOGIN_REDIRECT_URL = '/aprendiz_dashboard/'  # Página después de iniciar sesión
+LOGIN_REDIRECT_URL = '/cargar_documentos/'
+ # Página después de iniciar sesión
 LOGOUT_REDIRECT_URL = '/login/'      # Página después de cerrar sesión
