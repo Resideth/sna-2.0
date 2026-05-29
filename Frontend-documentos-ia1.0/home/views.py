@@ -22,26 +22,35 @@ def register_view(request):
             messages.error(request, "Las contraseñas no coinciden")
             return redirect('register')
 
-        # Enviar datos al backend FastAPI
-        response = requests.post(
-            f"{settings.BACKEND_URL}/register",
-            json={"nombre": nombre, "email": email, "password": password}
-        )
+        try:
+            # Enviar datos al backend FastAPI (Con tiempo de espera preventivo)
+            response = requests.post(
+                f"{settings.BACKEND_URL}/register",
+                json={"nombre": nombre, "email": email, "password": password},
+                timeout=5
+            )
 
-        if response.status_code == 200:
-            messages.success(request, "Usuario registrado correctamente")
-            return redirect('login')
-        else:
-            try: 
-                error_data = response.json()
-                error_msg = error_data.get("detail", response.text)
-            except Exception:
-                error_msg = response.text
-            
-            messages.error(request, f"Error al registrar: {error_msg}")
+            if response.status_code == 200:
+                messages.success(request, "Usuario registrado correctamente")
+                return redirect('login')
+            else:
+                try: 
+                    error_data = response.json()
+                    error_msg = error_data.get("detail", response.text)
+                except Exception:
+                    error_msg = response.text
+                
+                messages.error(request, f"Error al registrar: {error_msg}")
+                return redirect('register')
+        except requests.exceptions.Timeout:
+            messages.error(request, "El backend de FastAPI tardó demasiado en responder. Inténtalo de nuevo.")
+            return redirect('register')
+        except requests.exceptions.RequestException as e:
+            messages.error(request, f"No se pudo conectar con el backend: {e}")
             return redirect('register')
 
-    return render(request, 'login.html')
+    # CORREGIDO: Antes devolvía 'login.html' provocando el bucle infinito
+    return render(request, 'register.html')
 
 # Login de usuarios
 def login_view(request):
@@ -49,27 +58,34 @@ def login_view(request):
         email = request.POST.get("email")
         password = request.POST.get("password")
 
-        # Autenticación contra FastAPI
-        response = requests.post(
-            f"{settings.BACKEND_URL}/login",
-            json={"email": email, "password": password}
-        )
+        try:
+            # Autenticación contra FastAPI (Con tiempo de espera preventivo)
+            response = requests.post(
+                f"{settings.BACKEND_URL}/login",
+                json={"email": email, "password": password},
+                timeout=5
+            )
 
-        if response.status_code == 200:
-            data = response.json()
-            request.session["token"] = data.get("token")
+            if response.status_code == 200:
+                data = response.json()
+                request.session["token"] = data.get("token")
 
-            # Autenticación también en Django para mantener la sesión web
-            user = authenticate(request, username=email, password=password)
-            if user is None:
-                user = User.objects.filter(username=email).first()
+                # Autenticación también en Django para mantener la sesión web
+                user = authenticate(request, username=email, password=password)
                 if user is None:
-                    user = User.objects.create_user(username=email, email=email, password=password)
+                    user = User.objects.filter(username=email).first()
+                    if user is None:
+                        user = User.objects.create_user(username=email, email=email, password=password)
 
-            login(request, user)
-            return redirect("cargar_documentos")
-        else:
-            messages.error(request, "Correo o contraseña incorrectos.")
+                login(request, user)
+                return redirect("cargar_documentos")
+            else:
+                messages.error(request, "Correo o contraseña incorrectos.")
+        except requests.exceptions.Timeout:
+            messages.error(request, "El servidor de autenticación no responde. Inténtalo más tarde.")
+        except requests.exceptions.RequestException:
+            messages.error(request, "Error de conexión con el servidor de inicio de sesión.")
+            
     return render(request, "login.html")
 
 # Logout
@@ -87,7 +103,7 @@ def admin_dashboard(request):
 def aprendiz_dashboard(request):
     return render(request, 'cargar_documentos.html')
 
-# Documentos (Corregido: Sin guardar en base de datos local)
+# Documentos
 @login_required
 def cargar_documentos(request):
     aprendiz_info = None
@@ -101,7 +117,8 @@ def cargar_documentos(request):
                 response = requests.post(
                     f"{settings.BACKEND_URL}/ocr/upload/",
                     files={"file": (archivo.name, archivo.read(), archivo.content_type)},
-                    data={"tipo_documento": tipo} # Si tu backend acepta el tipo, lo enviamos aquí
+                    data={"tipo_documento": tipo},
+                    timeout=25 # El OCR puede tardar un poco más, le damos 25 segundos
                 )
 
                 if response.status_code == 200:
@@ -110,6 +127,8 @@ def cargar_documentos(request):
                 else:
                     messages.error(request, "Error al procesar el documento en el backend")
 
+            except requests.exceptions.Timeout:
+                messages.error(request, "El procesamiento del documento tomó demasiado tiempo. Verifica el backend.")
             except Exception as e:
                 messages.error(request, f"Error al conectar con el backend: {e}")
 
@@ -124,7 +143,7 @@ def cargar_documentos(request):
 
     return render(request, 'cargar_documentos.html', {'resultado': aprendiz_info})
 
-# Historial de documentos (Corregido: Consulta a FastAPI)
+# Historial de documentos
 @login_required
 def mis_documentos(request):
     documentos = []
@@ -133,7 +152,7 @@ def mis_documentos(request):
     try:
         # Le pedimos la lista de documentos al backend usando el token del usuario
         headers = {"Authorization": f"Bearer {token}"} if token else {}
-        response = requests.get(f"{settings.BACKEND_URL}/documentos/", headers=headers)
+        response = requests.get(f"{settings.BACKEND_URL}/documentos/", headers=headers, timeout=5)
         
         if response.status_code == 200:
             documentos = response.json()
