@@ -109,10 +109,11 @@ def cargar_documentos(request):
         archivo = request.FILES.get("archivo")
 
         if not archivo:
+            # Solo se muestra si realmente falta el archivo en un POST
             messages.error(request, "No se pudo obtener el historial de documentos.")
             return redirect("cargar_documentos")
 
-        try: 
+        try:
             response = requests.post(
                 f"{settings.BACKEND_URL}/ocr/upload/",
                 files={"file": (archivo.name, archivo.read(), archivo.content_type)},
@@ -131,15 +132,17 @@ def cargar_documentos(request):
         except Exception as e:
             messages.error(request, f"Error al conectar con el backend: {e}")
 
+    # Si no hay info, se muestran datos de prueba, pero sin notificación
     if not aprendiz_info:
         aprendiz_info = {
             "nombre": "Juan Pérez",
             "cedula": "123456789",
             "fecha_nacimiento": "1990-01-01",
             "programa": "Análisis de Datos"
-        } 
+        }
 
     return render(request, 'cargar_documentos.html', {'resultado': aprendiz_info})
+
 
 # Historial de documentos
 @login_required
