@@ -23,7 +23,6 @@ def register_view(request):
             return redirect('register')
 
         try:
-            # Enviar datos al backend FastAPI (Con tiempo de espera preventivo)
             response = requests.post(
                 f"{settings.BACKEND_URL}/register",
                 json={"nombre": nombre, "email": email, "password": password},
@@ -49,7 +48,6 @@ def register_view(request):
             messages.error(request, f"No se pudo conectar con el backend: {e}")
             return redirect('register')
 
-    # CORREGIDO: Antes devolvía 'login.html' provocando el bucle infinito
     return render(request, 'register.html')
 
 # Login de usuarios
@@ -59,7 +57,6 @@ def login_view(request):
         password = request.POST.get("password")
 
         try:
-            # Autenticación contra FastAPI (Con tiempo de espera preventivo)
             response = requests.post(
                 f"{settings.BACKEND_URL}/login",
                 json={"email": email, "password": password},
@@ -70,7 +67,6 @@ def login_view(request):
                 data = response.json()
                 request.session["token"] = data.get("token")
 
-                # Autenticación también en Django para mantener la sesión web
                 user = authenticate(request, username=email, password=password)
                 if user is None:
                     user = User.objects.filter(username=email).first()
@@ -109,31 +105,33 @@ def cargar_documentos(request):
     aprendiz_info = None
     if request.method == "POST":
         tipo = request.POST.get("tipo_documento")
+        programa = request.POST.get("programa")
         archivo = request.FILES.get("archivo")
 
-        if archivo:
-            try: 
-                # Enviamos el archivo directamente a FastAPI junto con el tipo de documento
-                response = requests.post(
-                    f"{settings.BACKEND_URL}/ocr/upload/",
-                    files={"file": (archivo.name, archivo.read(), archivo.content_type)},
-                    data={"tipo_documento": tipo},
-                    timeout=25 # El OCR puede tardar un poco más, le damos 25 segundos
-                )
+        if not archivo:
+            messages.error(request, "No se pudo obtener el historial de documentos.")
+            return redirect("cargar_documentos")
 
-                if response.status_code == 200:
-                    aprendiz_info = response.json()
-                    messages.success(request, "Documento procesado correctamente")
-                else:
-                    messages.error(request, "Error al procesar el documento en el backend")
+        try: 
+            response = requests.post(
+                f"{settings.BACKEND_URL}/ocr/upload/",
+                files={"file": (archivo.name, archivo.read(), archivo.content_type)},
+                data={"tipo_documento": tipo, "programa": programa},
+                timeout=25
+            )
 
-            except requests.exceptions.Timeout:
-                messages.error(request, "El procesamiento del documento tomó demasiado tiempo. Verifica el backend.")
-            except Exception as e:
-                messages.error(request, f"Error al conectar con el backend: {e}")
+            if response.status_code == 200:
+                aprendiz_info = response.json()
+                messages.success(request, "Documento procesado correctamente")
+            else:
+                messages.error(request, "Error al procesar el documento en el backend")
+
+        except requests.exceptions.Timeout:
+            messages.error(request, "El procesamiento del documento tomó demasiado tiempo. Verifica el backend.")
+        except Exception as e:
+            messages.error(request, f"Error al conectar con el backend: {e}")
 
     if not aprendiz_info:
-        # Datos de prueba por defecto si no se ha subido nada o falló
         aprendiz_info = {
             "nombre": "Juan Pérez",
             "cedula": "123456789",
@@ -150,7 +148,6 @@ def mis_documentos(request):
     token = request.session.get("token")
     
     try:
-        # Le pedimos la lista de documentos al backend usando el token del usuario
         headers = {"Authorization": f"Bearer {token}"} if token else {}
         response = requests.get(f"{settings.BACKEND_URL}/documentos/", headers=headers, timeout=5)
         
