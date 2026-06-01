@@ -108,11 +108,6 @@ def cargar_documentos(request):
         programa = request.POST.get("programa")
         archivo = request.FILES.get("archivo")
 
-        if not archivo:
-            # Solo se muestra si realmente falta el archivo en un POST
-            messages.error(request, "No se pudo obtener el historial de documentos.")
-            return redirect("cargar_documentos")
-
         try:
             response = requests.post(
                 f"{settings.BACKEND_URL}/ocr/upload/",
