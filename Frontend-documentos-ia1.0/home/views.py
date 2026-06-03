@@ -64,8 +64,13 @@ def login_view(request):
             )
 
             if response.status_code == 200:
-                data = response.json()
-                request.session["token"] = data.get("token")
+                try:
+                    data = response.json()
+                except ValueError:
+                    data = {}
+
+                token = data.get("token") if data else None
+                request.session["token"] = token
 
                 user = authenticate(request, username=email, password=password)
                 if user is None:
