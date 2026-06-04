@@ -109,6 +109,7 @@ def aprendiz_dashboard(request):
 @login_required
 def cargar_documentos(request):
     aprendiz_info = None
+
     if request.method == "POST":
         tipo = request.POST.get("tipo_documento")
         programa = request.POST.get("programa")
@@ -130,24 +131,15 @@ def cargar_documentos(request):
                     files={"file": archivo},
                 )
                 if response.status_code == 200:
-                    # 🔹 Aquí recibes el JSON del backend
+                    # 🔹 Aquí guardas el JSON que devuelve el backend
                     aprendiz_info = response.json()
-                    messages.success(request, "Documento procesado correctamente")
                 else:
                     messages.error(request, "Error al procesar el documento en el backend")
             except Exception as e:
                 messages.error(request, f"Error al procesar el documento en el backend: {e}")
 
-    # 🔹 Si no hay info, muestra un ejemplo para pruebas
-    if not aprendiz_info:
-        aprendiz_info = {
-            "nombre": "Juan Pérez",
-            "cedula": "123456789",
-            "fecha_nacimiento": "1990-01-01",
-            "programa": "Análisis de Datos"
-        }
+    return render(request, "cargar_documentos.html", {"aprendiz_info": aprendiz_info})
 
-    return render(request, 'cargar_documentos.html', {'aprendiz_info': aprendiz_info})
 
 
 # Historial de documentos
