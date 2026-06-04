@@ -132,16 +132,9 @@ def cargar_documentos(request):
         except Exception as e:
             messages.error(request, f"Error al conectar con el backend: {e}")
 
-    # Si no hay info, se muestran datos de prueba, pero sin notificación
-    if not aprendiz_info:
-        aprendiz_info = {
-            "nombre": "Juan Pérez",
-            "cedula": "123456789",
-            "fecha_nacimiento": "1990-01-01",
-            "programa": "Análisis de Datos"
-        }
+    
+   return render(request, 'cargar_documentos.html', {'aprendiz_info': aprendiz_info})
 
-    return render(request, 'cargar_documentos.html', {'resultado': aprendiz_info})
 
 # Historial de documentos
 @login_required
