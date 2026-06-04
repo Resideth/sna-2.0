@@ -111,7 +111,7 @@
             <h3><i class="bi bi-upload"></i> Cargar Documentos</h3>
             <p>Sube tu documento para validación</p>
 
-            <form method="POST" enctype="multipart/form-data" action="{% url 'cargar_documentos' %}">
+            <form id="formDoc" method="POST" enctype="multipart/form-data" action="{% url 'cargar_documentos' %}">
                 {% csrf_token %}
                 <div class="mb-3">
                     <label class="form-label">Tipo de Documento *</label>
@@ -125,14 +125,17 @@
                         <option value="desarrollador_software" selected>Desarrollador de Software</option>
                     </select>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Archivo</label>
-                    <input type="file" class="form-control" name="archivo" required>
-                    <small class="text-muted">Formatos permitidos: JPG, PNG, PDF | Tamaño máximo: 5MB</small>
-                </div>
-                <button type="submit" class="btn btn-upload w-100">
+
+                <!-- Input oculto -->
+                <input type="file" id="archivo" name="archivo" accept=".pdf,.jpg,.png" style="display:none;" required>
+
+                <!-- Botón único -->
+                <button type="button" id="btnSubir" class="btn btn-upload w-100">
                     <i class="bi bi-upload"></i> Subir Documento
                 </button>
+
+                <!-- Mostrar nombre del archivo -->
+                <p id="archivoNombre" class="text-muted mt-2"></p>
             </form>
         </div>
 
@@ -163,5 +166,32 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const btnSubir = document.getElementById("btnSubir");
+        const inputArchivo = document.getElementById("archivo");
+        const formDoc = document.getElementById("formDoc");
+        const archivoNombre = document.getElementById("archivoNombre");
+
+        // Primer clic → abrir selector
+        btnSubir.addEventListener("click", () => {
+            inputArchivo.click();
+        });
+
+        // Mostrar nombre del archivo seleccionado
+        inputArchivo.addEventListener("change", () => {
+            if (inputArchivo.files.length > 0) {
+                archivoNombre.textContent = "Archivo seleccionado: " + inputArchivo.files[0].name;
+            }
+        });
+
+        // Doble clic → enviar formulario
+        btnSubir.addEventListener("dblclick", () => {
+            if (inputArchivo.files.length === 0) {
+                alert("Primero selecciona un archivo.");
+                return;
+            }
+            formDoc.submit();
+        });
+    </script>
 </body>
 </html>
