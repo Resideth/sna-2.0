@@ -133,8 +133,7 @@ def cargar_documentos(request):
             messages.error(request, f"Error al conectar con el backend: {e}")
 
     
-   return render(request, 'cargar_documentos.html', {'aprendiz_info': aprendiz_info})
-
+    return render(request, 'cargar_documentos.html', {'resultado': aprendiz_info})
 
 # Historial de documentos
 @login_required
