@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 import requests
+import logging
 from django.conf import settings
 
 # Página principal
@@ -108,28 +109,17 @@ def aprendiz_dashboard(request):
 @login_required
 def cargar_documentos(request):
     aprendiz_info = None
-
     if request.method == "POST":
-        tipo = request.POST.get("tipo_documento")
-        programa = request.POST.get("programa")
         archivo = request.FILES.get("archivo")
-
         if archivo:
-            try:
-                response = requests.post(
-                    f"{settings.BACKEND_URL}/ocr/upload/",
-                    files={"file": archivo},
-                )
-                if response.status_code == 200:
-                    # 🔹 Guardar todo el JSON que devuelve el backend
-                    aprendiz_info = response.json()
-                else:
-                    messages.error(request, "Error al procesar el documento en el backend")
-            except Exception as e:
-                messages.error(request, f"Error al procesar el documento: {e}")
-
+            response = requests.post(
+                f"{settings.BACKEND_URL}/ocr/upload/",
+                files={"file": archivo},
+            )
+            logging.warning("Respuesta backend: %s", response.text)  # 🔹 imprime el JSON real
+            if response.status_code == 200:
+                aprendiz_info = response.json()
     return render(request, "cargar_documentos.html", {"aprendiz_info": aprendiz_info})
-
 # Historial de documentos
 @login_required
 def mis_documentos(request):
