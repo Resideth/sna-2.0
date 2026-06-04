@@ -156,10 +156,7 @@ def mis_documentos(request):
         
         if response.status_code == 200:
             documentos = response.json()
-        else:
-            messages.warning(request, "No se pudo obtener el historial de documentos.")
-    except Exception:
-        messages.error(request, "Error de conexión al obtener el historial.")
+
 
     return render(request, 'mis_documentos.html', {'documentos': documentos})
 
