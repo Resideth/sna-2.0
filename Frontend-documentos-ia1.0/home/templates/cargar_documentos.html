@@ -139,20 +139,18 @@
                 <p id="archivoNombre" class="text-muted mt-2"></p>
             </form>
         </div>
+<!-- Información del Aprendiz -->
+<div class="card p-4">
+    <h4>Información del Aprendiz (extraída del PDF)</h4>
+    {% if resultado %}
+        {% for key, value in resultado.items %}
+            <p><strong>{{ key|capfirst }}:</strong> {{ value }}</p>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted">Sube tu cédula en PDF para ver la información aquí.</p>
+    {% endif %}
+</div>
 
-        <!-- Información del Aprendiz -->
-        <div class="card p-4">
-            <h4>Información del Aprendiz (extraída del PDF)</h4>
-            {% if aprendiz_info %}
-            <p><strong>Nombre:</strong> {{ aprendiz_info.nombre }}</p>
-            <p><strong>Cédula:</strong> {{ aprendiz_info.cedula }}</p>
-            <p><strong>Fecha de Nacimiento:</strong> {{ aprendiz_info.fecha_nacimiento }}</p>
-
-            <pre>{{ aprendiz_info }}</pre>
-            {% else %}
-            <p class="text-muted">Sube tu cédula en PDF para ver la información aquí.</p>
-            {% endif %}
-        </div>
 
         <!-- Criterios -->
         <div class="card p-4">
