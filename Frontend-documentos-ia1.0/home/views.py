@@ -1,3 +1,4 @@
+from .models import PerfilUsuario, Documento
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -113,27 +114,41 @@ def cargar_documentos(request):
         programa = request.POST.get("programa")
         archivo = request.FILES.get("archivo")
 
-        try:
-            response = requests.post(
-                f"{settings.BACKEND_URL}/ocr/upload/",
-                files={"file": (archivo.name, archivo.read(), archivo.content_type)},
-                data={"tipo_documento": tipo, "programa": programa},
-                timeout=25
+        if not tipo or not programa:
+            messages.error(request, "Debes seleccionar tipo de documento y programa antes de subir.")
+            return redirect("cargar_documentos")
+
+        if archivo:
+            Documento.objects.create(
+                usuario=request.user,
+                tipo_documento=tipo,
+                archivo=archivo
             )
+            try:
+                response = requests.post(
+                    f"{settings.BACKEND_URL}/ocr/upload/",
+                    files={"file": archivo},
+                )
+                if response.status_code == 200:
+                    # 🔹 Aquí recibes el JSON del backend
+                    aprendiz_info = response.json()
+                    messages.success(request, "Documento procesado correctamente")
+                else:
+                    messages.error(request, "Error al procesar el documento en el backend")
+            except Exception as e:
+                messages.error(request, f"Error al procesar el documento en el backend: {e}")
 
-            if response.status_code == 200:
-                aprendiz_info = response.json()
-                messages.success(request, "Documento procesado correctamente")
-            else:
-                messages.error(request, "Error al procesar el documento en el backend")
+    # 🔹 Si no hay info, muestra un ejemplo para pruebas
+    if not aprendiz_info:
+        aprendiz_info = {
+            "nombre": "Juan Pérez",
+            "cedula": "123456789",
+            "fecha_nacimiento": "1990-01-01",
+            "programa": "Análisis de Datos"
+        }
 
-        except requests.exceptions.Timeout:
-            messages.error(request, "El procesamiento del documento tomó demasiado tiempo. Verifica el backend.")
-        except Exception as e:
-            messages.error(request, f"Error al conectar con el backend: {e}")
+    return render(request, 'cargar_documentos.html', {'aprendiz_info': aprendiz_info})
 
-    
-    return render(request, 'cargar_documentos.html', {'resultado': aprendiz_info})
 
 # Historial de documentos
 @login_required
