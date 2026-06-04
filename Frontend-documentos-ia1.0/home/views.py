@@ -1,4 +1,3 @@
-from .models import PerfilUsuario, Documento
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -107,39 +106,6 @@ def aprendiz_dashboard(request):
 
 # Documentos
 @login_required
-def cargar_documentos(request):
-    aprendiz_info = None
-
-    if request.method == "POST":
-        tipo = request.POST.get("tipo_documento")
-        programa = request.POST.get("programa")
-        archivo = request.FILES.get("archivo")
-
-        if not tipo or not programa:
-            messages.error(request, "Debes seleccionar tipo de documento y programa antes de subir.")
-            return redirect("cargar_documentos")
-
-        if archivo:
-            Documento.objects.create(
-                usuario=request.user,
-                tipo_documento=tipo,
-                archivo=archivo
-            )
-            try:
-                response = requests.post(
-                    f"{settings.BACKEND_URL}/ocr/upload/",
-                    files={"file": archivo},
-                )
-                if response.status_code == 200:
-                    # 🔹 Aquí guardas el JSON que devuelve el backend
-                    aprendiz_info = response.json()
-                else:
-                    messages.error(request, "Error al procesar el documento en el backend")
-            except Exception as e:
-                messages.error(request, f"Error al procesar el documento en el backend: {e}")
-
-    return render(request, "cargar_documentos.html", {"aprendiz_info": aprendiz_info})
-
 
 
 # Historial de documentos
