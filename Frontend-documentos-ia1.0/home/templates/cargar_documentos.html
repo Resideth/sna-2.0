@@ -104,8 +104,6 @@
 
     <!-- Contenido principal -->
     <div class="dashboard-container">
-        <!-- Bloque de mensajes -->
-        
         <!-- Formulario -->
         <div class="card p-4">
             <h3><i class="bi bi-upload"></i> Cargar Documentos</h3>
@@ -172,25 +170,24 @@
         const formDoc = document.getElementById("formDoc");
         const archivoNombre = document.getElementById("archivoNombre");
 
+        let archivoSeleccionado = false;
+
         // Primer clic → abrir selector
         btnSubir.addEventListener("click", () => {
-            inputArchivo.click();
+            if (!archivoSeleccionado) {
+                inputArchivo.click();
+            } else {
+                // Si ya hay archivo seleccionado, enviar formulario
+                formDoc.submit();
+            }
         });
 
         // Mostrar nombre del archivo seleccionado
         inputArchivo.addEventListener("change", () => {
             if (inputArchivo.files.length > 0) {
                 archivoNombre.textContent = "Archivo seleccionado: " + inputArchivo.files[0].name;
+                archivoSeleccionado = true;
             }
-        });
-
-        // Doble clic → enviar formulario
-        btnSubir.addEventListener("dblclick", () => {
-            if (inputArchivo.files.length === 0) {
-                alert("Primero selecciona un archivo.");
-                return;
-            }
-            formDoc.submit();
         });
     </script>
 </body>
