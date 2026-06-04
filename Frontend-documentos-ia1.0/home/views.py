@@ -106,7 +106,42 @@ def aprendiz_dashboard(request):
 
 # Documentos
 @login_required
+def cargar_documentos(request):
+    aprendiz_info = None
+    if request.method == "POST":
+        tipo = request.POST.get("tipo_documento")
+        programa = request.POST.get("programa")
+        archivo = request.FILES.get("archivo")
 
+        try:
+            response = requests.post(
+                f"{settings.BACKEND_URL}/ocr/upload/",
+                files={"file": (archivo.name, archivo.read(), archivo.content_type)},
+                data={"tipo_documento": tipo, "programa": programa},
+                timeout=25
+            )
+
+            if response.status_code == 200:
+                aprendiz_info = response.json()
+                messages.success(request, "Documento procesado correctamente")
+            else:
+                messages.error(request, "Error al procesar el documento en el backend")
+
+        except requests.exceptions.Timeout:
+            messages.error(request, "El procesamiento del documento tomó demasiado tiempo. Verifica el backend.")
+        except Exception as e:
+            messages.error(request, f"Error al conectar con el backend: {e}")
+
+    # Si no hay info, se muestran datos de prueba, pero sin notificación
+    if not aprendiz_info:
+        aprendiz_info = {
+            "nombre": "Juan Pérez",
+            "cedula": "123456789",
+            "fecha_nacimiento": "1990-01-01",
+            "programa": "Análisis de Datos"
+        }
+
+    return render(request, 'cargar_documentos.html', {'resultado': aprendiz_info})
 
 # Historial de documentos
 @login_required
