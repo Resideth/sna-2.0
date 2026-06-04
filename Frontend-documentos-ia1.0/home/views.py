@@ -143,7 +143,6 @@ def cargar_documentos(request):
 
     return render(request, 'cargar_documentos.html', {'resultado': aprendiz_info})
 
-
 # Historial de documentos
 @login_required
 def mis_documentos(request):
@@ -156,7 +155,10 @@ def mis_documentos(request):
         
         if response.status_code == 200:
             documentos = response.json()
-
+    except requests.exceptions.Timeout:
+        messages.error(request, "El servidor tardó demasiado en responder al solicitar documentos.")
+    except requests.exceptions.RequestException as e:
+        messages.error(request, f"Error al obtener documentos: {e}")
 
     return render(request, 'mis_documentos.html', {'documentos': documentos})
 
