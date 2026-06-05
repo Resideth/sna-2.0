@@ -79,6 +79,7 @@ def cargar_documentos(request):
             response = requests.post(
                 f"{settings.BACKEND_URL}/ocr/upload/",
                 files={"file": archivo},
+                data={"programa": "hologramas", "modelo: hologramas"} 
             )
             logging.warning("Respuesta backend: %s", response.text)  # 🔹 imprime el JSON real
             if response.status_code == 200:
