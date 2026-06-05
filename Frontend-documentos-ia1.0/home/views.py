@@ -77,9 +77,8 @@ def login_view(request):
 
                 login(request, user)
 
-                # 🔹 Verificar rol
-                perfil = getattr(user, "perfil", None)
-                if perfil and perfil.rol == "admin":
+                # 🔹 Aquí decides la interfaz según el correo
+                if email == "admin@institucion.edu.co":
                     return redirect("admin_dashboard")
                 else:
                     return redirect("cargar_documentos")
