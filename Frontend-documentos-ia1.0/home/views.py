@@ -65,12 +65,8 @@ def login_view(request):
             )
 
             if response.status_code == 200:
-                try:
-                    data = response.json()
-                except ValueError:
-                    data = {}
-
-                token = data.get("token") if data else None
+                data = response.json()
+                token = data.get("token")
                 request.session["token"] = token
 
                 user = authenticate(request, username=email, password=password)
@@ -80,14 +76,18 @@ def login_view(request):
                         user = User.objects.create_user(username=email, email=email, password=password)
 
                 login(request, user)
-                return redirect("cargar_documentos")
+
+                # 🔹 Verificar rol
+                perfil = getattr(user, "perfil", None)
+                if perfil and perfil.rol == "admin":
+                    return redirect("admin_dashboard")
+                else:
+                    return redirect("cargar_documentos")
             else:
                 messages.error(request, "Correo o contraseña incorrectos.")
-        except requests.exceptions.Timeout:
-            messages.error(request, "El servidor de autenticación no responde. Inténtalo más tarde.")
-        except requests.exceptions.RequestException:
-            messages.error(request, "Error de conexión con el servidor de inicio de sesión.")
-            
+        except Exception as e:
+            messages.error(request, f"Error de conexión: {e}")
+
     return render(request, "login.html")
 
 # Logout
