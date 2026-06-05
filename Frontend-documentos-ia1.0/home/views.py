@@ -109,39 +109,3 @@ def reportes_view(request):
     return render(request, 'reportes.html')
 
 
-def login_view(request):
-    if request.method == "POST":
-        email = request.POST.get("email")
-        password = request.POST.get("password")
-
-        try:
-            response = requests.post(
-                f"{settings.BACKEND_URL}/login",
-                json={"email": email, "password": password},
-                timeout=5
-            )
-
-            if response.status_code == 200:
-                data = response.json()
-                token = data.get("token")
-                request.session["token"] = token
-
-                user = authenticate(request, username=email, password=password)
-                if user is None:
-                    user = User.objects.filter(username=email).first()
-                    if user is None:
-                        user = User.objects.create_user(username=email, email=email, password=password)
-
-                login(request, user)
-
-                # 🔹 Redirigir según correo
-                if email.strip().lower() == "admin@institucion.edu.co":
-                    return redirect("admin_dashboard")
-                else:
-                    return redirect("cargar_documentos")
-            else:
-                messages.error(request, "Correo o contraseña incorrectos.")
-        except Exception as e:
-            messages.error(request, f"Error de conexión: {e}")
-
-    return render(request, "login.html")
