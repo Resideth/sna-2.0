@@ -78,7 +78,7 @@ def login_view(request):
                 login(request, user)
 
                 # 🔹 Aquí decides la interfaz según el correo
-                if email == "admin@institucion.edu.co":
+                if email.strip().lower() == "admin@institucion.edu.co":
                     return redirect("admin_dashboard")
                 else:
                     return redirect("cargar_documentos")

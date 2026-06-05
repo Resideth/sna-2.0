@@ -11,9 +11,11 @@ urlpatterns = [
     path('register/', register_view, name='register'),
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
-    path('admin_dashboard/', admin_dashboard, name='admin_dashboard'),
     path('aprendiz_dashboard/', aprendiz_dashboard, name='aprendiz_dashboard'),
     path('cargar_documentos/', cargar_documentos, name='cargar_documentos'),
     path('mis_documentos/', mis_documentos, name='mis_documentos'),
-    path('reportes/', reportes_view, name='reportes'),  # ruta para reportes
+    path('reportes/', reportes_view, name='reportes'), 
+    path("admin_dashboard/", admin_dashboard, name="admin_dashboard"),
+
+      # ruta para reportes
 ]
