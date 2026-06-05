@@ -49,7 +49,7 @@ def register_view(request):
             messages.error(request, f"No se pudo conectar con el backend: {e}")
             return redirect('register')
 
-    return render(request, 'register.html')
+    return render(request, 'login.html')
 
 # Login de usuarios
 def login_view(request):
@@ -89,6 +89,7 @@ def login_view(request):
             messages.error(request, f"Error de conexión: {e}")
 
     return render(request, "login.html")
+
 
 # Logout
 def logout_view(request):
