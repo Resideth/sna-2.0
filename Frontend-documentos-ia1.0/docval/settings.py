@@ -1,7 +1,7 @@
 """
 Django settings for docval project.
 """
-
+import dj_database_url
 import os
 from pathlib import Path
 
@@ -59,10 +59,9 @@ TEMPLATES = [
 WSGI_APPLICATION = 'docval.wsgi.application'
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=f'sqlite:///{BASE_DIR}/db.sqlite3'
+    )
 }
 
 AUTH_PASSWORD_VALIDATORS = [
