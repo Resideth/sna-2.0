@@ -113,25 +113,28 @@
                 {% csrf_token %}
                 <div class="mb-3">
                     <label class="form-label">Tipo de Documento *</label>
-                   <select class="form-select" name="tipo_documento" required>
-    <option value="cedula_ciudadania" selected>Cédula de Ciudadanía</option>
-    <option value="tarjeta_identidad">Tarjeta de Identidad</option>
-    <option value="cedula_extranjeria">Cédula de Extranjería</option>
-</select>
-
+                    <select class="form-select" id="tipo_documento" name="tipo_documento" required>
+                        <option value="" selected disabled>Seleccione...</option>
+                        <option value="cedula_ciudadania">Cédula de Ciudadanía</option>
+                        <option value="tarjeta_identidad">Tarjeta de Identidad</option>
+                        <option value="cedula_extranjeria">Cédula de Extranjería</option>
+                    </select>
                 </div>
+
                 <div class="mb-3">
                     <label class="form-label">Programa *</label>
-                    <select class="form-select" name="programa" required>
-                        <option value="desarrollador_software" selected>Desarrollador de Software</option>
+                    <select class="form-select" id="programa" name="programa" required disabled>
+                        <option value="" selected disabled>Seleccione...</option>
+                        <option value="desarrollador_software">Desarrollador de Software</option>
+                        <option value="analisis_datos">Análisis de Datos</option>
                     </select>
                 </div>
 
                 <!-- Input oculto -->
-                <input type="file" id="archivo" name="archivo" accept=".pdf,.jpg,.png" style="display:none;" required>
+                <input type="file" id="archivo" name="archivo" accept=".pdf,.jpg,.png" style="display:none;" required disabled>
 
                 <!-- Botón único -->
-                <button type="button" id="btnSubir" class="btn btn-upload w-100">
+                <button type="button" id="btnSubir" class="btn btn-upload w-100" disabled>
                     <i class="bi bi-upload"></i> Subir Documento
                 </button>
 
@@ -141,18 +144,25 @@
         </div>
 
         <!-- Información del Aprendiz -->
-        <div class="card p-4">
-            <h4>Información del Aprendiz (extraída del PDF)</h4>
-            {% if aprendiz_info %}
-            <p><strong>Nombre:</strong> {{ aprendiz_info.nombre }}</p>
-            <p><strong>Cédula:</strong> {{ aprendiz_info.cedula }}</p>
-            <p><strong>Fecha de Nacimiento:</strong> {{ aprendiz_info.fecha_nacimiento }}</p>
+  <div class="card p-4">
+    <h4>Información del Aprendiz (extraída del PDF)</h4>
+    {% if aprendiz_info %}
+        <ul class="list-group">
+            {% for key, value in aprendiz_info.items %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <strong>{{ key|capfirst }}:</strong>
+                    <span>{{ value }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-muted">Sube tu cédula en PDF para ver la información aquí.</p>
+    {% endif %}
+</div>
 
-            <pre>{{ aprendiz_info }}</pre>
-            {% else %}
-            <p class="text-muted">Sube tu cédula en PDF para ver la información aquí.</p>
-            {% endif %}
-        </div>
+
+
+
 
         <!-- Criterios -->
         <div class="card p-4">
@@ -168,28 +178,41 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        const tipoDocumento = document.getElementById("tipo_documento");
+        const programa = document.getElementById("programa");
+        const archivo = document.getElementById("archivo");
         const btnSubir = document.getElementById("btnSubir");
-        const inputArchivo = document.getElementById("archivo");
-        const formDoc = document.getElementById("formDoc");
         const archivoNombre = document.getElementById("archivoNombre");
+        const formDoc = document.getElementById("formDoc");
 
-        let archivoSeleccionado = false;
+        // Paso 1: habilitar programa cuando se selecciona tipo de documento
+        tipoDocumento.addEventListener("change", () => {
+            if (tipoDocumento.value) {
+                programa.disabled = false;
+            }
+        });
 
-        // Primer clic → abrir selector
+        // Paso 2: habilitar archivo y botón cuando se selecciona programa
+        programa.addEventListener("change", () => {
+            if (programa.value) {
+                archivo.disabled = false;
+                btnSubir.disabled = false;
+            }
+        });
+
+        // Paso 3: botón abre selector de archivo o envía formulario
         btnSubir.addEventListener("click", () => {
-            if (!archivoSeleccionado) {
-                inputArchivo.click();
+            if (!archivo.files.length) {
+                archivo.click();
             } else {
-                // Si ya hay archivo seleccionado, enviar formulario
                 formDoc.submit();
             }
         });
 
         // Mostrar nombre del archivo seleccionado
-        inputArchivo.addEventListener("change", () => {
-            if (inputArchivo.files.length > 0) {
-                archivoNombre.textContent = "Archivo seleccionado: " + inputArchivo.files[0].name;
-                archivoSeleccionado = true;
+        archivo.addEventListener("change", () => {
+            if (archivo.files.length > 0) {
+                archivoNombre.textContent = "Archivo seleccionado: " + archivo.files[0].name;
             }
         });
     </script>

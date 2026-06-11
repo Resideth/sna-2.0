@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 import requests
+import logging
 from django.conf import settings
 
 # Página principal
@@ -48,46 +49,10 @@ def register_view(request):
             messages.error(request, f"No se pudo conectar con el backend: {e}")
             return redirect('register')
 
-    return render(request, 'register.html')
+    return render(request, 'login.html')
 
 # Login de usuarios
-def login_view(request):
-    if request.method == "POST":
-        email = request.POST.get("email")
-        password = request.POST.get("password")
 
-        try:
-            response = requests.post(
-                f"{settings.BACKEND_URL}/login",
-                json={"email": email, "password": password},
-                timeout=5
-            )
-
-            if response.status_code == 200:
-                try:
-                    data = response.json()
-                except ValueError:
-                    data = {}
-
-                token = data.get("token") if data else None
-                request.session["token"] = token
-
-                user = authenticate(request, username=email, password=password)
-                if user is None:
-                    user = User.objects.filter(username=email).first()
-                    if user is None:
-                        user = User.objects.create_user(username=email, email=email, password=password)
-
-                login(request, user)
-                return redirect("cargar_documentos")
-            else:
-                messages.error(request, "Correo o contraseña incorrectos.")
-        except requests.exceptions.Timeout:
-            messages.error(request, "El servidor de autenticación no responde. Inténtalo más tarde.")
-        except requests.exceptions.RequestException:
-            messages.error(request, "Error de conexión con el servidor de inicio de sesión.")
-            
-    return render(request, "login.html")
 
 # Logout
 def logout_view(request):
@@ -109,40 +74,17 @@ def aprendiz_dashboard(request):
 def cargar_documentos(request):
     aprendiz_info = None
     if request.method == "POST":
-        tipo = request.POST.get("tipo_documento")
-        programa = request.POST.get("programa")
         archivo = request.FILES.get("archivo")
-
-        try:
+        if archivo:
             response = requests.post(
                 f"{settings.BACKEND_URL}/ocr/upload/",
-                files={"file": (archivo.name, archivo.read(), archivo.content_type)},
-                data={"tipo_documento": tipo, "programa": programa},
-                timeout=25
+                files={"file": archivo},
+                data={"programa": "hologramas", "modelo: hologramas"} 
             )
-
+            logging.warning("Respuesta backend: %s", response.text)  # 🔹 imprime el JSON real
             if response.status_code == 200:
                 aprendiz_info = response.json()
-                messages.success(request, "Documento procesado correctamente")
-            else:
-                messages.error(request, "Error al procesar el documento en el backend")
-
-        except requests.exceptions.Timeout:
-            messages.error(request, "El procesamiento del documento tomó demasiado tiempo. Verifica el backend.")
-        except Exception as e:
-            messages.error(request, f"Error al conectar con el backend: {e}")
-
-    # Si no hay info, se muestran datos de prueba, pero sin notificación
-    if not aprendiz_info:
-        aprendiz_info = {
-            "nombre": "Juan Pérez",
-            "cedula": "123456789",
-            "fecha_nacimiento": "1990-01-01",
-            "programa": "Análisis de Datos"
-        }
-
-    return render(request, 'cargar_documentos.html', {'resultado': aprendiz_info})
-
+    return render(request, "cargar_documentos.html", {"aprendiz_info": aprendiz_info})
 # Historial de documentos
 @login_required
 def mis_documentos(request):
@@ -165,3 +107,45 @@ def mis_documentos(request):
 @login_required
 def reportes_view(request):
     return render(request, 'reportes.html')
+
+def login_view(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+
+        try:
+            response = requests.post(
+                f"{settings.BACKEND_URL}/login",
+                json={"email": email, "password": password},
+                timeout=5
+            )
+
+            if response.status_code == 200:
+                data = response.json()
+                token = data.get("token")
+                request.session["token"] = token
+
+                # Buscar o crear usuario en Django
+                user = authenticate(request, username=email, password=password)
+                if user is None:
+                    user = User.objects.filter(username=email).first()
+                    if user is None:
+                        user = User.objects.create_user(username=email, email=email, password=password)
+
+                login(request, user)
+
+                # 🔹 Redirigir según el correo
+                if email.strip().lower() == "admin@institucion.edu.co":
+                    return redirect("admin_dashboard")
+                else:
+                    return redirect("cargar_documentos")
+
+            else:
+                messages.error(request, "Correo o contraseña incorrectos.")
+        except requests.exceptions.Timeout:
+            messages.error(request, "El servidor de autenticación no responde. Inténtalo más tarde.")
+        except requests.exceptions.RequestException as e:
+            messages.error(request, f"Error de conexión con el servidor: {e}")
+
+    return render(request, "login.html")
+
