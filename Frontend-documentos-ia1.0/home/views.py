@@ -31,17 +31,21 @@ def register_view(request):
             )
 
             if response.status_code == 200:
-                messages.success(request, "Usuario registrado correctamente")
-                return redirect('login')
+                # 🔹 Crear usuario también en Django y loguearlo
+                user, created = User.objects.get_or_create(username=email, email=email)
+                if created:
+                    user.set_password(password)
+                    user.save()
+
+                login(request, user)  # 🔑 guarda la sesión
+                messages.success(request, "Usuario registrado y autenticado correctamente")
+                return redirect('cargar_documentos')
+
             else:
-                try: 
-                    error_data = response.json()
-                    error_msg = error_data.get("detail", response.text)
-                except Exception:
-                    error_msg = response.text
-                
+                error_msg = response.json().get("detail", response.text)
                 messages.error(request, f"Error al registrar: {error_msg}")
                 return redirect('register')
+
         except requests.exceptions.Timeout:
             messages.error(request, "El backend de FastAPI tardó demasiado en responder. Inténtalo de nuevo.")
             return redirect('register')
