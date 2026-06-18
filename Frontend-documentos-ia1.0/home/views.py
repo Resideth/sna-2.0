@@ -74,17 +74,22 @@ def aprendiz_dashboard(request):
 def cargar_documentos(request):
     aprendiz_info = None
     if request.method == "POST":
+        tipo_documento = request.POST.get("tipo_documento")
+        programa = request.POST.get("programa")
         archivo = request.FILES.get("archivo")
-        if archivo:
+
+        if archivo and tipo_documento and programa:
             response = requests.post(
                 f"{settings.BACKEND_URL}/ocr/upload/",
                 files={"file": archivo},
-                data={"programa": "hologramas", "modelo: hologramas"} 
+                data={"tipo_documento": tipo_documento, "programa": programa, "modelo": "hologramas"}
             )
-            logging.warning("Respuesta backend: %s", response.text)  # 🔹 imprime el JSON real
+            logging.warning("Respuesta backend: %s", response.text)
             if response.status_code == 200:
                 aprendiz_info = response.json()
+
     return render(request, "cargar_documentos.html", {"aprendiz_info": aprendiz_info})
+
 # Historial de documentos
 @login_required
 def mis_documentos(request):
