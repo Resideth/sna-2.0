@@ -135,15 +135,14 @@ def login_view(request):
                 request.session["token"] = token
 
                 # Buscar o crear usuario en Django
-                user = authenticate(request, username=email, password=password)
+                user = User.objects.filter(username=email).first()
                 if user is None:
-                    user = User.objects.filter(username=email).first()
-                    if user is None:
-                        user = User.objects.create_user(username=email, email=email, password=password)
+                    user = User.objects.create_user(username=email, email=email, password=password)
 
+                # 🔑 Loguear directamente sin authenticate
                 login(request, user)
 
-                # 🔹 Redirigir según el correo
+                # Redirigir según el correo
                 if email.strip().lower() == "admin@institucion.edu.co":
                     return redirect("admin_dashboard")
                 else:
