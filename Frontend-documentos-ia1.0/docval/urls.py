@@ -1,9 +1,13 @@
-# home/urls.py
-from django.urls import path
-from . import views
+from django.contrib import admin
+from django.urls import path, include
 
 urlpatterns = [
-    path("api/register/", views.register_user, name="register"),
-    path("api/login/", views.login_user, name="login"),
-    path("api/logout/", views.logout_user, name="logout"),
+    # Panel de administración de Django
+    path('admin/', admin.site.urls),
+
+    # Rutas de la aplicación principal "home"
+    path('', include('home.urls')),  # conecta todas las rutas definidas en home/urls.py
+
+    
 ]
+

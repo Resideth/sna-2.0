@@ -86,7 +86,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / "media"
 
 # URL del backend FastAPI
-BACKEND_URL = os.getenv("BACKEND_URL", "https://documentacion-sena-ia-01.onrender.com/api/register/")
+BACKEND_URL = os.getenv("BACKEND_URL", "https://documentacion-sena-ia-01.onrender.com")
 
 # ✅ Configuración de autenticación personalizada
 LOGIN_URL = '/login/'                # Redirección cuando no está autenticado
