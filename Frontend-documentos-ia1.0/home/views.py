@@ -157,4 +157,3 @@ def login_view(request):
             messages.error(request, f"Error de conexión con el servidor: {e}")
 
     return render(request, "login.html")
-
