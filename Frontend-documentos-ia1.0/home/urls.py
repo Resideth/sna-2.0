@@ -1,10 +1,5 @@
 from django.urls import path
-from .views import (
-    home_view, register_view, login_view, logout_view,
-    admin_dashboard, aprendiz_dashboard,
-    cargar_documentos, mis_documentos,
-    reportes_view   # <-- mantenemos la vista de reportes
-)
+from . import views
 
 urlpatterns = [
     path('', home_view, name='home'),
