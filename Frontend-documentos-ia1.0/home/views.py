@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
@@ -24,20 +24,21 @@ def register_view(request):
             return redirect('register')
 
         try:
+            # ✅ URL corregida
             response = requests.post(
-                f"{settings.BACKEND_URL}/register",
+                f"{settings.BACKEND_URL}/api/register/",
                 json={"nombre": nombre, "email": email, "password": password},
                 timeout=5
             )
 
             if response.status_code == 200:
-                # 🔹 Crear usuario también en Django y loguearlo
+                # Crear usuario también en Django y loguearlo
                 user, created = User.objects.get_or_create(username=email, email=email)
                 if created:
                     user.set_password(password)
                     user.save()
 
-                login(request, user)  # 🔑 guarda la sesión
+                login(request, user)
                 messages.success(request, "Usuario registrado y autenticado correctamente")
                 return redirect('cargar_documentos')
 
@@ -54,9 +55,6 @@ def register_view(request):
             return redirect('register')
 
     return render(request, 'login.html')
-
-# Login de usuarios
-
 
 # Logout
 def logout_view(request):
@@ -123,8 +121,9 @@ def login_view(request):
         password = request.POST.get("password")
 
         try:
+            # ✅ URL corregida
             response = requests.post(
-                f"{settings.BACKEND_URL}/login",
+                f"{settings.BACKEND_URL}/api/login/",
                 json={"email": email, "password": password},
                 timeout=5
             )
@@ -134,15 +133,12 @@ def login_view(request):
                 token = data.get("token")
                 request.session["token"] = token
 
-                # Buscar o crear usuario en Django
                 user = User.objects.filter(username=email).first()
                 if user is None:
                     user = User.objects.create_user(username=email, email=email, password=password)
 
-                # 🔑 Loguear directamente sin authenticate
                 login(request, user)
 
-                # Redirigir según el correo
                 if email.strip().lower() == "admin@institucion.edu.co":
                     return redirect("admin_dashboard")
                 else:
