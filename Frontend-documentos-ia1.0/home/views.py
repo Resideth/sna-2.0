@@ -26,7 +26,7 @@ def register_view(request):
         try:
             response = requests.post(
                 f"{settings.BACKEND_URL}/api/register/",
-                json={"username": nombre, "email": email, "password": password},
+                json={"nombre": nombre, "email": email, "password": password},
                 timeout=5
             )
 
@@ -55,6 +55,7 @@ def register_view(request):
             return redirect('register')
 
     return render(request, 'login.html')
+
 
 
 # Logout
