@@ -156,5 +156,5 @@ def login_view(request):
         except requests.exceptions.RequestException as e:
             messages.error(request, f"Error de conexión con el servidor: {e}")
 
-    return render(request, "register.html")
+    return render(request, "login.html")
 
