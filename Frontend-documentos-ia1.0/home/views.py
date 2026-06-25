@@ -27,7 +27,7 @@ def register_view(request):
             # ✅ URL corregida
             response = requests.post(
                 f"{settings.BACKEND_URL}/api/register/",
-                json={"nombre": nombre, "email": email, "password": password},
+                json={"usarname": nombre, "email": email, "password": password},
                 timeout=5
             )
 
