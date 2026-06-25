@@ -25,10 +25,11 @@ def register_view(request):
 
         try:
             response = requests.post(
-                f"{settings.BACKEND_URL}/api/register/",
-                json={"nombre": nombre, "email": email, "password": password},
-                timeout=5
-            )
+   f"{settings.BACKEND_URL}/api/register/",
+    json={"nombre": nombre, "email": email, "password": password},
+    timeout=5
+)
+
 
             logging.warning("Respuesta registro backend: %s", response.text)
 
