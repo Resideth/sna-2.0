@@ -24,15 +24,15 @@ def register_view(request):
             return redirect('register')
 
         try:
-            # ✅ URL corregida
             response = requests.post(
                 f"{settings.BACKEND_URL}/api/register/",
-                json={"usarname": nombre, "email": email, "password": password},
+                json={"username": nombre, "email": email, "password": password},
                 timeout=5
             )
 
+            logging.warning("Respuesta registro backend: %s", response.text)
+
             if response.status_code == 200:
-                # Crear usuario también en Django y loguearlo
                 user, created = User.objects.get_or_create(username=email, email=email)
                 if created:
                     user.set_password(password)
@@ -55,6 +55,7 @@ def register_view(request):
             return redirect('register')
 
     return render(request, 'login.html')
+
 
 # Logout
 def logout_view(request):
