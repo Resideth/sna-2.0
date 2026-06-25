@@ -1,5 +1,15 @@
 from django.urls import path
-from .views import home_view
+from .views import (
+    home_view,
+    register_view,
+    login_view,
+    logout_view,
+    aprendiz_dashboard,
+    cargar_documentos,
+    mis_documentos,
+    reportes_view,
+    admin_dashboard,
+)
 
 urlpatterns = [
     path('', home_view, name='home'),
@@ -9,8 +19,6 @@ urlpatterns = [
     path('aprendiz_dashboard/', aprendiz_dashboard, name='aprendiz_dashboard'),
     path('cargar_documentos/', cargar_documentos, name='cargar_documentos'),
     path('mis_documentos/', mis_documentos, name='mis_documentos'),
-    path('reportes/', reportes_view, name='reportes'), 
-    path("admin_dashboard/", admin_dashboard, name="admin_dashboard"),
-
-      # ruta para reportes
+    path('reportes/', reportes_view, name='reportes'),
+    path('admin_dashboard/', admin_dashboard, name='admin_dashboard'),
 ]
