@@ -1,7 +1,6 @@
 """
 Django settings for docval project.
 """
-import dj_database_url
 import os
 from pathlib import Path
 
@@ -24,7 +23,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'home.apps.HomeConfig',
+    'home',
 ]
 
 MIDDLEWARE = [
@@ -59,10 +58,16 @@ TEMPLATES = [
 WSGI_APPLICATION = 'docval.wsgi.application'
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default=f'sqlite:///{BASE_DIR}/db.sqlite3'
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'sna_db_80w3',
+        'USER': 'sna_user',
+        'PASSWORD': 'ZfPo3nRNTmi5VkmS4siPgmlnCBE37Rmy',
+        'HOST': 'dpg-d91fmnhkh4rs73a8au30-a.oregon-postgres.render.com',
+        'PORT': '5432',
+    }
 }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
