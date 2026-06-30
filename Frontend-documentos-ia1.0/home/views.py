@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
@@ -25,7 +25,7 @@ def register_view(request):
 
         try:
             response = requests.post(
-                f"{settings.BACKEND_URL}/register",   # ✅ corregido (sin barra final)
+                f"{settings.BACKEND_URL}/register",
                 json={"nombre": nombre, "email": email, "password": password},
                 timeout=5
             )
@@ -33,8 +33,11 @@ def register_view(request):
             logging.warning("Respuesta registro backend: %s", response.text)
 
             if response.status_code == 200:
-                user, created = User.objects.get_or_create(username=email, email=email)
-                if created:
+                # ✅ Siempre crear usuario con contraseña encriptada
+                user = User.objects.filter(username=email).first()
+                if user is None:
+                    user = User.objects.create_user(username=email, email=email, password=password)
+                else:
                     user.set_password(password)
                     user.save()
 
@@ -64,7 +67,7 @@ def login_view(request):
 
         try:
             response = requests.post(
-                f"{settings.BACKEND_URL}/login",   # ✅ corregido (sin /api y sin barra final)
+                f"{settings.BACKEND_URL}/login",
                 json={"email": email, "password": password},
                 timeout=5
             )
@@ -74,7 +77,8 @@ def login_view(request):
                 token = data.get("token")
                 request.session["token"] = token
 
-                user = User.objects.filter(username=email).first()
+                # ✅ Autenticar con Django
+                user = authenticate(request, username=email, password=password)
                 if user is None:
                     user = User.objects.create_user(username=email, email=email, password=password)
 
@@ -120,7 +124,7 @@ def cargar_documentos(request):
 
         if archivo and tipo_documento and programa:
             response = requests.post(
-                f"{settings.BACKEND_URL}/ocr/upload/",   # ✅ coincide con tu backend
+                f"{settings.BACKEND_URL}/ocr/upload/",
                 files={"file": archivo},
                 data={"tipo_documento": tipo_documento, "programa": programa, "modelo": "hologramas"}
             )
