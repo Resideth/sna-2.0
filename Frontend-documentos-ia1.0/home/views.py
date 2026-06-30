@@ -33,7 +33,7 @@ def register_view(request):
             logging.warning("Respuesta registro backend: %s", response.text)
 
             if response.status_code == 200:
-                # ✅ Siempre crear usuario con contraseña encriptada
+                # ✅ Crear o actualizar usuario en Django con username=email
                 user = User.objects.filter(username=email).first()
                 if user is None:
                     user = User.objects.create_user(username=email, email=email, password=password)
@@ -57,7 +57,7 @@ def register_view(request):
             messages.error(request, f"No se pudo conectar con el backend: {e}")
             return redirect('register')
 
-    return render(request, 'login.html')
+    return render(request, 'register.html')  # ✅ usar la plantilla correcta
 
 # Login de usuarios
 def login_view(request):
@@ -77,13 +77,20 @@ def login_view(request):
                 token = data.get("token")
                 request.session["token"] = token
 
-                # ✅ Autenticar con Django
+                # ✅ Autenticar con Django usando username=email
                 user = authenticate(request, username=email, password=password)
                 if user is None:
-                    user = User.objects.create_user(username=email, email=email, password=password)
+                    user = User.objects.filter(username=email).first()
+                    if user is None:
+                        user = User.objects.create_user(username=email, email=email, password=password)
+                    else:
+                        user.set_password(password)
+                        user.save()
+                        user = authenticate(request, username=email, password=password)
 
                 login(request, user)
 
+                # ✅ Redirección según rol
                 if email.strip().lower() == "admin@institucion.edu.co":
                     return redirect("admin_dashboard")
                 else:
