@@ -75,7 +75,9 @@ def login_view(request):
             if response.status_code == 200:
                 data = response.json()
                 token = data.get("token")
+                usuario_id = data.get("usuario_id")
                 request.session["token"] = token
+                request.session["usuario_id"] = usuario_id
 
                 # ✅ Autenticar con Django
                 user = authenticate(request, username=email, password=password)
@@ -126,7 +128,12 @@ def cargar_documentos(request):
             response = requests.post(
                 f"{settings.BACKEND_URL}/ocr/upload/",
                 files={"file": archivo},
-                data={"tipo_documento": tipo_documento, "programa": programa, "modelo": "hologramas"}
+                data={
+                    "tipo_documento": tipo_documento, 
+                    "programa": programa, 
+                    "modelo": "hologramas",
+                    "usuario_id": request.session.get("usuario_id")
+                }
             )
             logging.warning("Respuesta backend: %s", response.text)
             if response.status_code == 200:
