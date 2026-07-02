@@ -87,6 +87,7 @@ def login_view(request):
                 user = authenticate(request, username=email, password=password)
                 if user is None:
                     user = User.objects.create_user(username=email, email=email, password=password)
+                    user = authenticate(request, username=email, password=password)
 
                 login(request, user)
 
@@ -97,6 +98,8 @@ def login_view(request):
 
             else:
                 messages.error(request, "Correo o contraseña incorrectos.")
+                return redirect("login")
+                
         except requests.exceptions.Timeout:
             messages.error(request, "El servidor de autenticación no responde. Inténtalo más tarde.")
         except requests.exceptions.RequestException as e:
