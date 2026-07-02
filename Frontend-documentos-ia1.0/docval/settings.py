@@ -105,6 +105,8 @@ CSRF_TRUSTED_ORIGINS = [
     "https://documentación-sena-ia-01.onrender.com"
 ]
 
+CSRF_COOKIE_SAMESITE = "None"
+SESSION_COOKIE_SAMESITE = "None"
 # Cookies seguras (obligatorio en producción con  HTTPS)
 CSRF_COOKIE_SECURE = True
 SESSTON_COOKIE_SECURE = True
