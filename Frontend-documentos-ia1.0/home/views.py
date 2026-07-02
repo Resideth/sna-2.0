@@ -40,10 +40,14 @@ def register_view(request):
                 else:
                     user.set_password(password)
                     user.save()
-
-                login(request, user)
-                messages.success(request, "Usuario registrado y autenticado correctamente")
-                return redirect('cargar_documentos')
+                user = authenticate(request, username=email, email=email, password=password)
+                if user:
+                    login(request, user)
+                    messages.sucess(request, "Usuario registrado y autenticado corectamente")
+                    return redirect('cargar_documentos')
+                else:
+                    messages.error(request, "No se pudo auntenticar el usario en Django")
+                    return redirect('login')
 
             else:
                 error_msg = response.json().get("detail", response.text)
