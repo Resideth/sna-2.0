@@ -87,6 +87,8 @@ def login_view(request):
                 user = authenticate(request, username=email, password=password)
                 if user is None:
                     user = User.objects.create_user(username=email, email=email, password=password)
+                    user.set_password(password)
+                    user.save()
                     user = authenticate(request, username=email, password=password)
 
                 login(request, user)
