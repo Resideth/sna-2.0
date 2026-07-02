@@ -132,6 +132,9 @@ def cargar_documentos(request):
         archivo = request.FILES.get("archivo")
 
         if archivo and tipo_documento and programa:
+            token = request.session.get("token")
+            headers = {"Autorización": f"Baerer {token}"} if token else {}
+            
             response = requests.post(
                 f"{settings.BACKEND_URL}/ocr/upload/",
                 files={"file": archivo},
@@ -140,11 +143,16 @@ def cargar_documentos(request):
                     "programa": programa, 
                     "modelo": "hologramas",
                     "usuario_id": request.session.get("usuario_id")
-                }
+                },
+                headers=headers, 
+                timeout=10
             )
+            
             logging.warning("Respuesta backend: %s", response.text)
             if response.status_code == 200:
                 aprendiz_info = response.json()
+            else:
+                messages.error(request, f"Error al subir documento: {response.text}")
 
     return render(request, "cargar_documentos.html", {"aprendiz_info": aprendiz_info})
 
