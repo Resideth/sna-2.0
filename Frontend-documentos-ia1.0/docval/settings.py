@@ -98,3 +98,16 @@ LOGIN_URL = '/login/'                # Redirección cuando no está autenticado
 LOGIN_REDIRECT_URL = '/cargar_documentos/'
  # Página después de iniciar sesión
 LOGOUT_REDIRECT_URL = '/login/'      # Página después de cerrar sesión
+
+# Confianza en los dominios externos
+CSRF_TRUSTED_ORIGINS = [
+    "https://sna-2-0-3.onrender.com",
+    "https://documentación-sena-ia-01.onrender.com"
+]
+
+# Cookies seguras (obligatorio en producción con  HTTPS)
+CSRF_COOKIE_SECURE = True
+SESSTON_COOKIE_SECURE = True
+
+
+
