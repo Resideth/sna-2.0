@@ -22,6 +22,14 @@ def register_view(request):
         if password != password2:
             messages.error(request, "Las contraseñas no coinciden")
             return redirect('register')
+        else:
+            user = User.objects.create_user(username=nombre, email=email)
+            user.set_password(password)
+            user.save()
+
+            login(request, user)
+
+            return redirect("cargar_documentos")
 
         try:
             response = requests.post(
