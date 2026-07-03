@@ -86,7 +86,7 @@ def login_view(request):
                 # ✅ Autenticar con Django
                 user = authenticate(request, username=email, password=password)
                 if user is None:
-                    user = User.objects.create_user(username=email, email=email, password=password)
+                    user = User.objects.create_user(username=email, email=email)
                     user.set_password(password)
                     user.save()
                     user = authenticate(request, username=email, password=password)
