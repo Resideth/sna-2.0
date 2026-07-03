@@ -22,15 +22,7 @@ def register_view(request):
         if password != password2:
             messages.error(request, "Las contraseñas no coinciden")
             return redirect('register')
-        else:
-            user = User.objects.create_user(username=nombre, email=email)
-            user.set_password(password)
-            user.save()
-
-            login(request, user)
-
-            return redirect("cargar_documentos")
-
+             
         try:
             response = requests.post(
                 f"{settings.BACKEND_URL}/register",
@@ -45,13 +37,13 @@ def register_view(request):
                 user = User.objects.filter(username=email).first()
                 if user is None:
                     user = User.objects.create_user(username=email, email=email, password=password)
-                else:
-                    user.set_password(password)
-                    user.save()
+                user.set_password(password)
+                user.save()
+                
                 user = authenticate(request, username=email, email=email, password=password)
                 if user:
                     login(request, user)
-                    messages.sucess(request, "Usuario registrado y autenticado corectamente")
+                    messages.success(request, "Usuario registrado y autenticado corectamente")
                     return redirect('cargar_documentos')
                 else:
                     messages.error(request, "No se pudo auntenticar el usario en Django")
