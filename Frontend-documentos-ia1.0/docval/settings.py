@@ -60,10 +60,10 @@ WSGI_APPLICATION = 'docval.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'sna_db_80w3',
-        'USER': 'sna_user',
-        'PASSWORD': 'ZfPo3nRNTmi5VkmS4siPgmlnCBE37Rmy',
-        'HOST': 'dpg-d91fmnhkh4rs73a8au30-a.oregon-postgres.render.com',
+        'NAME': 'documentos_sena_ia3_db',
+        'USER': 'documentos_sena_ia3_db_user',
+        'PASSWORD': 'VaUITVPFyRaagd4zGUin4Jg7qd7XhN4e',
+        'HOST': 'dpg-d9ajs8l8nd3s73a6l7a0-a.internal',
         'PORT': '5432',
     }
 }
