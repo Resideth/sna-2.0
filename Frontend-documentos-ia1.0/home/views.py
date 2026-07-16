@@ -83,16 +83,6 @@ def login_view(request):
                 request.session["token"] = token
                 request.session["usuario_id"] = usuario_id
 
-                # ✅ Autenticar con Django
-                user = authenticate(request, username=email, password=password)
-                if user is None:
-                    user = User.objects.create_user(username=email, email=email)
-                    user.set_password(password)
-                    user.save()
-                    user = authenticate(request, username=email, password=password)
-
-                login(request, user)
-
                 if email.strip().lower() == "admin@institucion.edu.co":
                     return redirect("admin_dashboard")
                 else:
