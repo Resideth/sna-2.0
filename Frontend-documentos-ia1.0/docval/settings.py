@@ -59,12 +59,8 @@ WSGI_APPLICATION = 'docval.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'documentos_sena_ia3_db',
-        'USER': 'documentos_sena_ia3_db_user',
-        'PASSWORD': 'VaUITVPFyRaagd4zGUin4Jg7qd7XhN4e',
-        'HOST': 'dpg-d9ajs8l8nd3s73a6l7a0-a.internal',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / "db.sqlite3",
     }
 }
 
@@ -109,7 +105,7 @@ CSRF_COOKIE_SAMESITE = "None"
 SESSION_COOKIE_SAMESITE = "None"
 # Cookies seguras (obligatorio en producción con  HTTPS)
 CSRF_COOKIE_SECURE = True
-SESSTON_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 
 
 
