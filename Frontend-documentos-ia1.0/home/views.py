@@ -117,7 +117,7 @@ def cargar_documentos(request):
 
         if archivo and tipo_documento and programa:
             token = request.session.get("token")
-            headers = {"Autorización": f"Bearer {token}"} if token else {}
+            headers = {"Autorization": f"Bearer {token}"} if token else {}
             
             response = requests.post(
                 f"{settings.BACKEND_URL}/ocr/upload/",
