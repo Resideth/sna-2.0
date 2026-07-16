@@ -117,7 +117,7 @@ def cargar_documentos(request):
 
         if archivo and tipo_documento and programa:
             token = request.session.get("token")
-            headers = {"Autorización": f"Baerer {token}"} if token else {}
+            headers = {"Autorización": f"Bearer {token}"} if token else {}
             
             response = requests.post(
                 f"{settings.BACKEND_URL}/ocr/upload/",
@@ -148,10 +148,16 @@ def mis_documentos(request):
     
     try:
         headers = {"Authorization": f"Bearer {token}"} if token else {}
-        response = requests.get(f"{settings.BACKEND_URL}/documentos/", headers=headers, timeout=5)
+        response = requests.get(
+            f"{settings.BACKEND_URL}/documentos/", 
+            headers=headers, 
+            timeout=5
+        )
         
         if response.status_code == 200:
             documentos = response.json()
+        else:
+            messages.error(request, f"Error al obtener documentos: {response.text}")
     except requests.exceptions.Timeout:
         messages.error(request, "El servidor tardó demasiado en responder al solicitar documentos.")
     except requests.exceptions.RequestException as e:
