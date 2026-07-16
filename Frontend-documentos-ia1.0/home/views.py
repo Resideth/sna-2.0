@@ -28,28 +28,20 @@ def register_view(request):
                 f"{settings.BACKEND_URL}/register",
                 json={"nombre": nombre, "email": email, "password": password},
                 timeout=5
-            )
-
-            logging.warning("Respuesta registro backend: %s", response.text)
+            )          
 
             if response.status_code == 200:
-                # ✅ Siempre crear usuario con contraseña encriptada
-                user = User.objects.filter(username=email).first()
-                if user is None:
-                    user = User.objects.create_user(username=email, email=email, password=password)
-                user.set_password(password)
-                user.save()
-                
-                user = authenticate(request, username=email, email=email, password=password)
-                if user:
-                    login(request, user)
-                    messages.success(request, "Usuario registrado y autenticado corectamente")
-                    return redirect('cargar_documentos')
-                else:
-                    messages.error(request, "No se pudo auntenticar el usario en Django")
-                    return redirect('login')
+                data = response.json()
+                token = data.get("token")
+                usuario_id = data.get("usuario_id")
 
-            else:
+                request.session["token"]
+                request.session["usuario_id"]
+              
+                messages.success(request, "Usuario registrado y autenticado corectamente")
+                return redirect('cargar_documentos')
+            
+            else:                    
                 error_msg = response.json().get("detail", response.text)
                 messages.error(request, f"Error al registrar: {error_msg}")
                 return redirect('register')
