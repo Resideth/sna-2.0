@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import logout  # Solo logout (no necesitamos login/authenticate)
+from django.contrib.auth import logout
 from django.contrib import messages
 import requests
 import logging
@@ -32,11 +32,10 @@ def register_view(request):
                 timeout=5
             )
 
-            logger.info(f"📩 Respuesta del backend: status={response.status_code}, body={response.text}")  # ✅ CORREGIDO
+            logger.info(f"📩 Respuesta del backend: status={response.status_code}, body={response.text}")
 
             if response.status_code == 200:
                 data = response.json()
-                token = data.get("token")
                 usuario_id = data.get("usuario_id")
                 request.session["usuario_id"] = usuario_id
                 messages.success(request, "Usuario registrado correctamente")
@@ -76,7 +75,7 @@ def login_view(request):
                 
                 request.session["token"] = token
                 request.session["usuario_id"] = usuario_id
-                request.session["email"] = email  # ✅ SOLO ESTA LÍNEA NUEVA
+                request.session["email"] = email
                 
                 messages.success(request, "Login exitoso")
                 if email.strip().lower() == "admin@institucion.edu.co":
@@ -119,10 +118,13 @@ def admin_dashboard(request):
 def aprendiz_dashboard(request):
     return render(request, 'cargar_documentos.html')
 
-# Documentos
+# ============================================
+# 📌 CARGAR DOCUMENTOS (VERSIÓN ASÍNCRONA)
+# ============================================
 @token_required
 def cargar_documentos(request):
     aprendiz_info = None
+    
     if request.method == "POST":
         tipo_documento = request.POST.get("tipo_documento")
         programa = request.POST.get("programa")
@@ -132,25 +134,33 @@ def cargar_documentos(request):
             token = request.session.get("token")
             headers = {"Authorization": f"Bearer {token}"} if token else {}
             
-            response = requests.post(
-                f"{settings.BACKEND_URL}/ocr/upload/",
-                files={"file": archivo},
-                data={
-                    "tipo_documento": tipo_documento, 
-                    "programa": programa, 
-                    "modelo": "hologramas",
-                    "usuario_id": request.session.get("usuario_id")
-                },
-                headers=headers, 
-                timeout=30
-            )
-            
-            logging.warning("Respuesta backend: %s", response.text)
-            if response.status_code == 200:
-                aprendiz_info = response.json()
-                messages.success(request, "Documento procesado correctamente")
-            else:
-                messages.error(request, f"Error al subir documento: {response.text}")
+            try:
+                # ⬇️ Enviar archivo al backend (timeout corto)
+                response = requests.post(
+                    f"{settings.BACKEND_URL}/ocr/upload/",
+                    files={"file": archivo},
+                    data={
+                        "tipo_documento": tipo_documento,
+                        "programa": programa,
+                        "modelo": "hologramas",
+                        "usuario_id": request.session.get("usuario_id")
+                    },
+                    headers=headers,
+                    timeout=10  # ⬅️ 10 segundos máximo para confirmación
+                )
+                
+                # ⬇️ Verificar respuesta del backend
+                if response.status_code == 200:
+                    data = response.json()
+                    messages.success(request, f"✅ {data.get('mensaje', 'Documento subido correctamente')}")
+                else:
+                    messages.error(request, f"❌ Error al subir el documento: {response.text}")
+                    
+            except requests.exceptions.Timeout:
+                # ⬇️ Si el backend tarda en responder, pero el archivo puede estar subiéndose
+                messages.info(request, "⏳ Documento enviado. El procesamiento puede tomar unos segundos...")
+            except requests.exceptions.RequestException as e:
+                messages.error(request, f"❌ Error de conexión con el servidor: {e}")
 
     return render(request, "cargar_documentos.html", {"aprendiz_info": aprendiz_info})
 
