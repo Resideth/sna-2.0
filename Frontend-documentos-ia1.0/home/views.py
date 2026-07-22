@@ -1,8 +1,6 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import logout  # Solo logout (no necesitamos login/authenticate)
 from django.contrib import messages
-from django.contrib.auth.models import User
-from django.contrib.auth.decorators import login_required
 import requests
 import logging
 from django.conf import settings
@@ -32,13 +30,14 @@ def register_view(request):
 
             if response.status_code == 200:
                 data = response.json()
-                token = data.get("token")
+                # Ahora el registro devuelve usuario_id, pero NO token
+                # Si el registro no devuelve token, debemos hacer login después
                 usuario_id = data.get("usuario_id")
-
+                # Guardamos usuario_id en sesión
                 request.session["usuario_id"] = usuario_id
-              
-                messages.success(request, "Usuario registrado y autenticado corectamente")
-                return redirect('cargar_documentos')
+                messages.success(request, "Usuario registrado correctamente")
+                # Redirigir al login para que el usuario inicie sesión
+                return redirect('login')
             
             else:                    
                 error_msg = response.json().get("detail", response.text)
@@ -74,6 +73,7 @@ def login_view(request):
                 request.session["token"] = token
                 request.session["usuario_id"] = usuario_id
 
+                messages.success(request, "Login exitoso")
                 if email.strip().lower() == "admin@institucion.edu.co":
                     return redirect("admin_dashboard")
                 else:
@@ -92,21 +92,31 @@ def login_view(request):
 
 # Logout
 def logout_view(request):
-    logout(request)
+    # Limpiar la sesión manualmente (no usamos logout de Django)
+    request.session.flush()
     messages.success(request, "Sesión cerrada exitosamente.")
     return redirect('login')
 
+# ---- Decorador personalizado para verificar token ----
+def token_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        if not request.session.get("token"):
+            messages.error(request, "Debes iniciar sesión primero.")
+            return redirect('login')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
 # Dashboards
-@login_required
+@token_required
 def admin_dashboard(request):
     return render(request, 'admin_dashboard.html')
 
-@login_required
+@token_required
 def aprendiz_dashboard(request):
     return render(request, 'cargar_documentos.html')
 
 # Documentos
-@login_required
+@token_required
 def cargar_documentos(request):
     aprendiz_info = None
     if request.method == "POST":
@@ -116,7 +126,8 @@ def cargar_documentos(request):
 
         if archivo and tipo_documento and programa:
             token = request.session.get("token")
-            headers = {"Autorization": f"Bearer {token}"} if token else {}
+            # CORREGIR: "Authorization" (estaba "Autorization")
+            headers = {"Authorization": f"Bearer {token}"} if token else {}
             
             response = requests.post(
                 f"{settings.BACKEND_URL}/ocr/upload/",
@@ -134,13 +145,14 @@ def cargar_documentos(request):
             logging.warning("Respuesta backend: %s", response.text)
             if response.status_code == 200:
                 aprendiz_info = response.json()
+                messages.success(request, "Documento procesado correctamente")
             else:
                 messages.error(request, f"Error al subir documento: {response.text}")
 
     return render(request, "cargar_documentos.html", {"aprendiz_info": aprendiz_info})
 
 # Historial de documentos
-@login_required
+@token_required
 def mis_documentos(request):
     documentos = []
     token = request.session.get("token")
@@ -164,6 +176,6 @@ def mis_documentos(request):
 
     return render(request, 'mis_documentos.html', {'documentos': documentos})
 
-@login_required
+@token_required
 def reportes_view(request):
     return render(request, 'reportes.html')
