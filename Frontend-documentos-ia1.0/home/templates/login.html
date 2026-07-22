@@ -27,6 +27,7 @@
         .btn-alt:hover { background:#2e7d32; }
         .btn-home { background:#1e88e5; color:#fff; font-weight:bold; width:100%; border-radius:8px; padding:12px; transition:all 0.3s ease; }
         .btn-home:hover { background:#1565c0; }
+        .hidden { display: none; }  /* 👈 NUEVA CLASE PARA OCULTAR */
     </style>
 </head>
 <body>
@@ -48,9 +49,10 @@
         <div class="login-box">
 
             <!-- Formulario de Login -->
-            <div id="loginFormContainer">
+            <div id="loginForm">
                 <h3>Bienvenido</h3>
-                <form id="loggingForm">
+                <form method="post" action="{% url 'login' %}">
+                    {% csrf_token %}
                     <input type="email" name="email" class="form-control" placeholder="Correo Electrónico" required>
                     <input type="password" name="password" class="form-control" placeholder="Contraseña" required>
                     <button type="submit" class="btn btn-main">Iniciar Sesión</button>
@@ -60,7 +62,7 @@
             </div>
 
             <!-- Formulario de Registro -->
-            <div id="registerForm" style="display:none;">
+            <div id="registerForm" class="hidden">  <!-- 👈 OCULTO POR DEFECTO -->
                 <h3>Crear Cuenta</h3>
                 <form method="post" action="{% url 'register' %}">
                     {% csrf_token %}
@@ -73,51 +75,31 @@
                     <a href="{% url 'home' %}" class="btn btn-home">Ir al Home</a>
                 </form>
             </div>
+
         </div>
     </div>
 
-   <script>
-    function showRegister() {
-        document.getElementById("loginForm").style.display = "none";
-        document.getElementById("registerForm").style.display = "block";
-    }
-    function showLogin() {
-        document.getElementById("registerForm").style.display = "none";
-        document.getElementById("loginForm").style.display = "block";
-    }
-
-    document.getElementById("loginForm").addEventListener("submit", async function(event) {
-        event.preventDefault();
-
-        const email = event.target.email.value.trim();
-        const password = event.target.password.value.trim();
-
-        if (!email || !password) {
-            alert("Correo y contraseña son obligatorios");
-            return;
+    <script>
+        function showRegister() {
+            document.getElementById("loginForm").style.display = "none";
+            document.getElementById("registerForm").style.display = "block";
         }
 
-        const response = await fetch("https://sna-2-0-3.onrender.com/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ email, password })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            alert(data.detail || data.mensaje || "Error en el login");
-            return;
+        function showLogin() {
+            document.getElementById("registerForm").style.display = "none";
+            document.getElementById("loginForm").style.display = "block";
         }
 
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("usuario_id", data.usuario_id);
-
-        window.location.href = "/ruta-de-subida-de-documentos"; 
-    });
-</script>
+        // 👇 OPCIÓN: Mostrar el formulario de registro si hay errores de validación
+        // Si el servidor devuelve errores en el registro, mostrar el formulario de registro
+        window.onload = function() {
+            // Si hay mensajes de error del servidor, mostrar el registro
+            {% if messages %}
+                // Esto requiere que Django pase los mensajes, pero es opcional
+                showRegister();
+            {% endif %}
+        };
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
