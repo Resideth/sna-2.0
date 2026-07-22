@@ -5,6 +5,8 @@ import requests
 import logging
 from django.conf import settings
 
+logger = logging.getLogger(__name__)
+
 # Página principal
 def home_view(request):
     return render(request, 'home.html')
@@ -21,7 +23,7 @@ def register_view(request):
             messages.error(request, "Las contraseñas no coinciden")
             return redirect('register')
 
-        print(f"🔍 Enviando registro: nombre={nombre}, email={email}, password={password}")
+         logger.info(f"🔍 Enviando registro: nombre={nombre}, email={email}, password={password}")
              
         try:
             response = requests.post(
@@ -30,7 +32,7 @@ def register_view(request):
                 timeout=5
             )
 
-            print(f"📩 Respuesta del backend: status={response.status_code}, body={response.text}")
+             logger.info(f"📩 Respuesta del backend: status={response.status_code}, body={response.text}")
 
             if response.status_code == 200:
                 data = response.json()
@@ -68,7 +70,7 @@ def login_view(request):
             response = requests.post(
                 f"{settings.BACKEND_URL}/login",
                 json={"email": email, "password": password},
-                timeout=5
+                timeout=10
             )
 
             if response.status_code == 200:
@@ -77,7 +79,11 @@ def login_view(request):
                 usuario_id = data.get("usuario_id")
                 request.session["token"] = token
                 request.session["usuario_id"] = usuario_id
-
+                
+                 request.session["token"] = token
+                request.session["usuario_id"] = usuario_id
+                request.session["email"] = email
+                
                 messages.success(request, "Login exitoso")
                 if email.strip().lower() == "admin@institucion.edu.co":
                     return redirect("admin_dashboard")
@@ -144,7 +150,7 @@ def cargar_documentos(request):
                     "usuario_id": request.session.get("usuario_id")
                 },
                 headers=headers, 
-                timeout=10
+                timeout=30
             )
             
             logging.warning("Respuesta backend: %s", response.text)
