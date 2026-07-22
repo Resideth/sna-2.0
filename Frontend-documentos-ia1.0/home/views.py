@@ -35,7 +35,6 @@ def register_view(request):
                 token = data.get("token")
                 usuario_id = data.get("usuario_id")
 
-                request.session["token"] = token
                 request.session["usuario_id"] = usuario_id
               
                 messages.success(request, "Usuario registrado y autenticado corectamente")
