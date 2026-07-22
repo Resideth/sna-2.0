@@ -18,13 +18,13 @@ def register_view(request):
         email = request.POST.get("email")
         password = request.POST.get("password")
         password2 = request.POST.get("password2")
-
+        
+        logger.info(f"🔍 Enviando registro: nombre={nombre}, email={email}, password={password}")
+        
         if password != password2:
             messages.error(request, "Las contraseñas no coinciden")
             return redirect('register')
-
-         logger.info(f"🔍 Enviando registro: nombre={nombre}, email={email}, password={password}")
-             
+                     
         try:
             response = requests.post(
                 f"{settings.BACKEND_URL}/register",
@@ -32,18 +32,14 @@ def register_view(request):
                 timeout=5
             )
 
-             logger.info(f"📩 Respuesta del backend: status={response.status_code}, body={response.text}")
+            logger.info(f"📩 Respuesta del backend: status={response.status_code}, body={response.text}")  # ✅ CORREGIDO
 
             if response.status_code == 200:
                 data = response.json()
                 token = data.get("token")
-                # Ahora el registro devuelve usuario_id, pero NO token
-                # Si el registro no devuelve token, debemos hacer login después
                 usuario_id = data.get("usuario_id")
-                # Guardamos usuario_id en sesión
                 request.session["usuario_id"] = usuario_id
                 messages.success(request, "Usuario registrado correctamente")
-                # Redirigir al login para que el usuario inicie sesión
                 return redirect('cargar_documentos')
             
             else:                    
@@ -77,12 +73,10 @@ def login_view(request):
                 data = response.json()
                 token = data.get("token")
                 usuario_id = data.get("usuario_id")
+                
                 request.session["token"] = token
                 request.session["usuario_id"] = usuario_id
-                
-                 request.session["token"] = token
-                request.session["usuario_id"] = usuario_id
-                request.session["email"] = email
+                request.session["email"] = email  # ✅ SOLO ESTA LÍNEA NUEVA
                 
                 messages.success(request, "Login exitoso")
                 if email.strip().lower() == "admin@institucion.edu.co":
@@ -103,12 +97,11 @@ def login_view(request):
 
 # Logout
 def logout_view(request):
-    # Limpiar la sesión manualmente (no usamos logout de Django)
     request.session.flush()
     messages.success(request, "Sesión cerrada exitosamente.")
     return redirect('login')
 
-# ---- Decorador personalizado para verificar token ----
+# Decorador personalizado para verificar token
 def token_required(view_func):
     def wrapper(request, *args, **kwargs):
         if not request.session.get("token"):
@@ -137,7 +130,6 @@ def cargar_documentos(request):
 
         if archivo and tipo_documento and programa:
             token = request.session.get("token")
-            # CORREGIR: "Authorization" (estaba "Autorization")
             headers = {"Authorization": f"Bearer {token}"} if token else {}
             
             response = requests.post(
