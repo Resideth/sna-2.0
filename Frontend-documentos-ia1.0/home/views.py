@@ -20,16 +20,21 @@ def register_view(request):
         if password != password2:
             messages.error(request, "Las contraseñas no coinciden")
             return redirect('register')
+
+        print(f"🔍 Enviando registro: nombre={nombre}, email={email}, password={password}")
              
         try:
             response = requests.post(
                 f"{settings.BACKEND_URL}/register",
                 json={"nombre": nombre, "email": email, "password": password},
                 timeout=5
-            )          
+            )
+
+            print(f"📩 Respuesta del backend: status={response.status_code}, body={response.text}")
 
             if response.status_code == 200:
                 data = response.json()
+                token = data.get("token")
                 # Ahora el registro devuelve usuario_id, pero NO token
                 # Si el registro no devuelve token, debemos hacer login después
                 usuario_id = data.get("usuario_id")
@@ -37,7 +42,7 @@ def register_view(request):
                 request.session["usuario_id"] = usuario_id
                 messages.success(request, "Usuario registrado correctamente")
                 # Redirigir al login para que el usuario inicie sesión
-                return redirect('login')
+                return redirect('cargar_documentos')
             
             else:                    
                 error_msg = response.json().get("detail", response.text)
