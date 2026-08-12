@@ -98,7 +98,7 @@ LOGOUT_REDIRECT_URL = '/login/'      # Página después de cerrar sesión
 # Confianza en los dominios externos
 CSRF_TRUSTED_ORIGINS = [
     "https://sna-2-0-3.onrender.com",
-    "https://documentación-sena-ia-01.onrender.com"
+    "https://documentacion-sena-ia-01.onrender.com"
 ]
 
 CSRF_COOKIE_SAMESITE = "None"
