@@ -103,9 +103,19 @@ CSRF_TRUSTED_ORIGINS = [
 
 CSRF_COOKIE_SAMESITE = "None"
 SESSION_COOKIE_SAMESITE = "None"
+
 # Cookies seguras (obligatorio en producción con  HTTPS)
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
+
+# Forzar que CSRF use cookies (no sesiones)
+CSRF_USE_SESSIONS = False
+
+# Dominio de la cookie CSRF (dejarlo en None para que use el dominio actual)
+CSRF_COOKIE_DOMAIN = None
+
+# Ruta de la cookie CSRF
+CSRF_COOKIE_PATH = '/'
 
 
 
