@@ -31,7 +31,7 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',  # ✅ para servir estáticos en Render
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    #'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -112,7 +112,7 @@ SESSION_COOKIE_SECURE = True
 CSRF_USE_SESSIONS = False
 
 # Dominio de la cookie CSRF (dejarlo en None para que use el dominio actual)
-CSRF_COOKIE_DOMAIN = None
+CSRF_COOKIE_DOMAIN = '.onrender.com'
 
 # Ruta de la cookie CSRF
 CSRF_COOKIE_PATH = '/'
